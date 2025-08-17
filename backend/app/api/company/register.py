@@ -1,4 +1,4 @@
-from dotenv import load_dotenv
+# from dotenv import load_dotenv
 import os
 import shutil
 from io import StringIO
@@ -6,8 +6,11 @@ from fastapi import APIRouter, FastAPI, File, UploadFile, HTTPException, Form
 from fastapi.responses import JSONResponse
 
 # Load env vars
-load_dotenv()
-DATA_STORAGE_PATH = os.getenv("DATA_STORAGE_PATH", "./data")
+# load_dotenv()
+# DATA_STORAGE_PATH = os.getenv("DATA_STORAGE_PATH", "./data")
+
+DATA_STORAGE_PATH = "./data"
+
 
 router = APIRouter(prefix="/v1/company")  # Added prefix here
 
@@ -40,3 +43,17 @@ async def delete_company(company_name: str = Form(...)):
         raise HTTPException(status_code=500, detail=f"Failed to delete company: {str(e)}")
     
     return {"status": "success", "company": company_name}
+
+@router.get("/list-companies")
+async def list_companies():
+    """
+    Returns a list of all registered companies (folders in DATA_STORAGE_PATH).
+    """
+    try:
+        companies = [
+            name for name in os.listdir(DATA_STORAGE_PATH)
+            if os.path.isdir(os.path.join(DATA_STORAGE_PATH, name))
+        ]
+        return {"companies": companies}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to list companies: {str(e)}")
